@@ -56,12 +56,11 @@ var (
 // Need decode to DER binary if recevied a base64 file.
 func Parse(root *x509.Certificate, data []byte) (Receipts, error) {
 	pkcs, err := pkcs7.Parse(data)
-
 	if err != nil {
 		return Receipts{}, err
 	}
 
-	if !verifyCertificates(root, pkcs.Certificates) {
+	if !verifyCertificates(root, pkcs) {
 		return Receipts{}, ErrInvalidCertificate
 	}
 
@@ -92,29 +91,29 @@ func (r *Receipts) Verify(guid []byte) bool {
 	return true
 }
 
-func verifyCertificates(root *x509.Certificate, certs []*x509.Certificate) bool {
+func verifyCertificates(root *x509.Certificate, pkcs *pkcs7.PKCS7) bool {
 	roots := x509.NewCertPool()
-	if root != nil {
-		roots.AddCert(root)
-	}
-	for _, cert := range certs {
-		roots.AddCert(cert)
-	}
-	opts := x509.VerifyOptions{
-		Roots: roots,
-	}
-	for _, cert := range certs {
-		chain, err := cert.Verify(opts)
-		for _, c := range chain {
-			if len(c) > 1 && c[0] == c[1] {
-				// self certificate
-				return false
-			}
-		}
-		if err != nil {
-			return false
+	roots.AddCert(root)
+
+	signer := pkcs.GetOnlySigner()
+
+	// prepare intermediate certs
+	intermediates := x509.NewCertPool()
+	for _, cert := range pkcs.Certificates {
+		if cert != signer && !cert.Equal(root) {
+			intermediates.AddCert(cert)
 		}
 	}
+
+	_, err := signer.Verify(x509.VerifyOptions{
+		Intermediates: intermediates,
+		Roots:         roots,
+	})
+
+	if err != nil {
+		return false
+	}
+
 	return true
 }
 
