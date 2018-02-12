@@ -18,26 +18,27 @@ import (
 // Receipt is the receipt for an in-app purchase.
 type Receipt struct {
 	Quantity              int
-	ProductID             string
-	TransactionID         string
-	PurchaseDate          time.Time
-	OriginalTransactionID string
-	OriginalPurchaseDate  time.Time
-	ExpiresDate           time.Time
-	WebOrderLineItemID    int
-	CancellationDate      time.Time
+	ProductID             string    `json:"product_id"`
+	TransactionID         string    `json:"transaction_date"`
+	PurchaseDate          time.Time `json:"purchase_date"`
+	OriginalTransactionID string    `json:"original_transaction_id"`
+	OriginalPurchaseDate  time.Time `json:"original_purchase_date"`
+	ExpiresDate           time.Time `json:"expires_date"`
+	WebOrderLineItemID    int       `json:"web_order_line_item_id"`
+	CancellationDate      time.Time `json:"cancellation_date"`
+	IsInIntroPrice        bool      `json:"is_in_intro_offer_period"`
 }
 
 // Receipts is the app receipt.
 type Receipts struct {
-	BundleID                   string
-	ApplicationVersion         string
+	BundleID                   string `json:"bundle_id"`
+	ApplicationVersion         string `json:"application_version"`
 	OpaqueValue                []byte
 	SHA1Hash                   []byte
-	ReceiptCreationDate        time.Time
-	InApp                      []Receipt
-	OriginalApplicationVersion string
-	ExpirationDate             time.Time
+	CreationDate               time.Time `json:"creation_date"`
+	InApp                      []Receipt `json:"in_app"`
+	OriginalApplicationVersion string    `json:"original_application_version"`
+	ExpirationDate             time.Time `json:"expiration_date"`
 
 	rawBundleID []byte
 }
@@ -234,6 +235,12 @@ func parseInApp(data []byte) (ret Receipt, err error) {
 			if err != nil {
 				return
 			}
+		case 1719:
+			var intRoprice int
+			if _, err = asn1.Unmarshal(ra.Value, &intRoprice); err != nil {
+				return
+			}
+			ret.IsInIntroPrice = (intRoprice != 0)
 		}
 	}
 	return
