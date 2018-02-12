@@ -156,7 +156,7 @@ func parsePKCS(pkcs *pkcs7.PKCS7) (ret Receipts, err error) {
 		case 5:
 			ret.SHA1Hash = ra.Value
 		case 12:
-			ret.ReceiptCreationDate, err = asn1ParseTime(ra.Value)
+			ret.CreationDate, err = asn1ParseTime(ra.Value)
 			if err != nil {
 				return
 			}
