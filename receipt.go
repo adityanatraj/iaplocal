@@ -17,7 +17,7 @@ import (
 
 // Receipt is the receipt for an in-app purchase.
 type Receipt struct {
-	Quantity              int
+	Quantity              int       `json:"quantity"`
 	ProductID             string    `json:"product_id"`
 	TransactionID         string    `json:"transaction_date"`
 	PurchaseDate          time.Time `json:"purchase_date"`
@@ -31,10 +31,10 @@ type Receipt struct {
 
 // Receipts is the app receipt.
 type Receipts struct {
-	BundleID                   string `json:"bundle_id"`
-	ApplicationVersion         string `json:"application_version"`
-	OpaqueValue                []byte
-	SHA1Hash                   []byte
+	BundleID                   string    `json:"bundle_id"`
+	ApplicationVersion         string    `json:"application_version"`
+	OpaqueValue                []byte    `json:"opaque_value"`
+	SHA1Hash                   []byte    `json:"sha1hash"`
 	CreationDate               time.Time `json:"creation_date"`
 	InApp                      []Receipt `json:"in_app"`
 	OriginalApplicationVersion string    `json:"original_application_version"`
